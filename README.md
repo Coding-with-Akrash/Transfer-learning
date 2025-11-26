@@ -1,82 +1,112 @@
-# Medical Image Classification with Transfer Learning
+# Ensemble Medical Image Classification with Streamlit
 
-This project demonstrates transfer learning and fine-tuning of ResNet-18 and VGG-16 models for multi-class medical image classification using blood cell and chest X-ray datasets.
+This project provides a Streamlit web application for training, evaluating, and deploying ensemble predictions using ResNet-18 and VGG-16 models on medical image datasets (blood cells and chest X-rays).
+
+## Features
+
+- **Dataset Management**: Automatic download and preparation of blood cell and chest X-ray datasets
+- **Model Training**: Fine-tune ResNet-18 and VGG-16 models with configurable epochs
+- **Ensemble Prediction**: Combine model predictions using voting, averaging, or weighted averaging
+- **Model Evaluation**: Evaluate individual models and ensemble on test data
+- **Interactive UI**: User-friendly Streamlit interface for all operations
 
 ## Datasets
 
-The project combines two medical imaging datasets:
 - **Blood Cells Dataset**: Classifies white blood cells into EOSINOPHIL, LYMPHOCYTE, MONOCYTE, NEUTROPHIL
 - **Chest X-ray Pneumonia Dataset**: Classifies chest X-rays into NORMAL and PNEUMONIA
-
-Total classes: 6 (EOSINOPHIL, LYMPHOCYTE, MONOCYTE, NEUTROPHIL, NORMAL, PNEUMONIA)
 
 ## Models
 
 - **ResNet-18**: Fine-tuned with layer4 and fully connected layer unfrozen
 - **VGG-16**: Fine-tuned with the last convolutional block and classifier unfrozen
 
-## Features
-
-- Automatic dataset download and preparation
-- Model training with Adam optimizer
-- Evaluation with confusion matrices
-- Model saving for inference
-- Instant prediction on new images
-- Comparative visualization of training metrics
-
 ## Requirements
-
-- Python 3.7+
-- PyTorch
-- Torchvision
-- Matplotlib
-- Seaborn
-- Scikit-learn
-- Pillow
-- Kagglehub
 
 Install dependencies:
 ```bash
-pip install torch torchvision matplotlib seaborn scikit-learn pillow kagglehub
+pip install -r requirements.txt
+```
+
+Or manually:
+```bash
+pip install torch torchvision streamlit pillow numpy matplotlib seaborn scikit-learn kagglehub
 ```
 
 ## Usage
 
-1. Run the training script:
+### Local Development
+
+1. Clone the repository:
 ```bash
-python main.py
+git clone https://github.com/Coding-with-Akrash/Transfer-learning.git
+cd Transfer-learning
 ```
 
-The script will:
-- Download and prepare datasets
-- Train ResNet-18 and VGG-16 models
-- Save trained models as `resnet18_model.pth` and `vgg16_model.pth`
-- Display training progress and confusion matrices
-- Show comparative loss and accuracy plots
-
-2. For prediction on new images:
-Uncomment and modify the prediction example in `main.py`:
-```python
-prediction = predict_image('resnet18_model.pth', models.resnet18, 'path/to/image.jpg', class_names)
-print("Predicted class:", prediction)
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
 ```
 
-## Results
+3. Run the Streamlit app:
+```bash
+streamlit run ensemble_app.py
+```
 
-The models are evaluated on test accuracy, with comparative plots showing:
-- Training and test loss curves
-- Training and test accuracy curves
+4. Open your browser to `http://localhost:8501`
 
-Final accuracies are printed for both models.
+### Navigation
+
+- **Dataset**: Download and prepare datasets
+- **Train Models**: Train ResNet-18 or VGG-16 with selected epochs
+- **Ensemble Prediction**: Upload images for ensemble predictions
+- **Evaluate Models**: Test accuracy on trained models
+
+## Deployment
+
+### Streamlit Cloud
+
+1. Fork this repository to your GitHub account
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Connect your GitHub account and select the forked repository
+4. Set the main file path to `ensemble_app.py`
+5. Click Deploy
+
+### Local Deployment
+
+For production deployment, consider using Docker:
+
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "ensemble_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+```
+
+Build and run:
+```bash
+docker build -t ensemble-app .
+docker run -p 8501:8501 ensemble-app
+```
 
 ## Project Structure
 
-- `main.py`: Main script for training and evaluation
-- `resnet.py`: Custom ResNet implementation (not used in main script)
+- `ensemble_app.py`: Main Streamlit application
+- `train.py`: Model training functions
+- `dataset.py`: Dataset download and preparation
+- `utils.py`: Utility functions for model loading and prediction
+- `main.py`: Original training script (legacy)
+- `requirements.txt`: Python dependencies
 - `dataset/`: Local dataset storage (created automatically)
 - `resnet18_model.pth`: Saved ResNet-18 model
 - `vgg16_model.pth`: Saved VGG-16 model
-- `README.md`: This file
 
 ## License
 
@@ -87,3 +117,4 @@ This project is for educational purposes. Datasets are from Kaggle (public domai
 - Blood Cells Dataset: https://www.kaggle.com/paultimothymooney/blood-cells
 - Chest X-ray Dataset: https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
 - PyTorch Documentation: https://pytorch.org/
+- Streamlit Documentation: https://docs.streamlit.io/
