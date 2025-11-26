@@ -47,6 +47,11 @@ elif page == "Ensemble Prediction":
         image = Image.open(uploaded_file).convert('RGB')
         st.image(image, caption='Uploaded Image', use_column_width=True)
 
+        import os
+        if not os.path.exists('resnet18_model.pth') or not os.path.exists('vgg16_model.pth'):
+            st.error("Models not found. Please train the models first.")
+            st.stop()
+    
         # Load models
         resnet_model = utils.load_resnet18(class_names)
         vgg_model = utils.load_vgg16(class_names)
@@ -99,10 +104,13 @@ elif page == "Evaluate Models":
     class_names = ['EOSINOPHIL', 'LYMPHOCYTE', 'MONOCYTE', 'NEUTROPHIL']
 
     if st.button("Evaluate ResNet-18"):
-        with st.spinner("Evaluating ResNet-18..."):
-            # Load dataset
-            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
-            model = utils.load_resnet18(class_names)
+        if not os.path.exists('resnet18_model.pth'):
+            st.error("ResNet-18 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating ResNet-18..."):
+                # Load dataset
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_resnet18(class_names)
             model.eval()
             correct = 0
             total = 0
@@ -117,9 +125,12 @@ elif page == "Evaluate Models":
         st.success(f"ResNet-18 Test Accuracy: {accuracy:.2f}%")
 
     if st.button("Evaluate VGG-16"):
-        with st.spinner("Evaluating VGG-16..."):
-            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
-            model = utils.load_vgg16(class_names)
+        if not os.path.exists('vgg16_model.pth'):
+            st.error("VGG-16 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating VGG-16..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_vgg16(class_names)
             model.eval()
             correct = 0
             total = 0
@@ -134,10 +145,13 @@ elif page == "Evaluate Models":
         st.success(f"VGG-16 Test Accuracy: {accuracy:.2f}%")
 
     if st.button("Evaluate Ensemble"):
-        with st.spinner("Evaluating Ensemble..."):
-            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
-            resnet_model = utils.load_resnet18(class_names)
-            vgg_model = utils.load_vgg16(class_names)
+        if not os.path.exists('resnet18_model.pth') or not os.path.exists('vgg16_model.pth'):
+            st.error("Models not found. Please train the models first.")
+        else:
+            with st.spinner("Evaluating Ensemble..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                resnet_model = utils.load_resnet18(class_names)
+                vgg_model = utils.load_vgg16(class_names)
             resnet_model.eval()
             vgg_model.eval()
             correct = 0
