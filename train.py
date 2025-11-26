@@ -30,7 +30,7 @@ def load_dataset(dataset_path):
 
     return train_loader, test_loader, full_dataset.classes
 
-def train_model(model, train_loader, test_loader, num_epochs=2):
+def train_model(model, train_loader, test_loader, class_names, num_epochs=2):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
@@ -90,7 +90,7 @@ def train_model(model, train_loader, test_loader, num_epochs=2):
     # Confusion matrix
     cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=full_dataset.classes, yticklabels=full_dataset.classes)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
     plt.title('Confusion Matrix')
     plt.xlabel('Predicted')
     plt.ylabel('True')
@@ -116,7 +116,7 @@ def train_resnet18(dataset_path, num_epochs=2):
             param.requires_grad = True
 
     resnet18 = resnet18.to(device)
-    train_losses, test_losses, train_accs, test_accs = train_model(resnet18, train_loader, test_loader, num_epochs)
+    train_losses, test_losses, train_accs, test_accs = train_model(resnet18, train_loader, test_loader, class_names, num_epochs)
     torch.save(resnet18.state_dict(), 'resnet18_model.pth')
     print("ResNet-18 model saved.")
     return train_losses, test_losses, train_accs, test_accs
@@ -140,7 +140,7 @@ def train_vgg16(dataset_path, num_epochs=2):
         param.requires_grad = True
 
     vgg16 = vgg16.to(device)
-    train_losses, test_losses, train_accs, test_accs = train_model(vgg16, train_loader, test_loader, num_epochs)
+    train_losses, test_losses, train_accs, test_accs = train_model(vgg16, train_loader, test_loader, class_names, num_epochs)
     torch.save(vgg16.state_dict(), 'vgg16_model.pth')
     print("VGG-16 model saved.")
     return train_losses, test_losses, train_accs, test_accs
