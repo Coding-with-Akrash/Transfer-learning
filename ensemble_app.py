@@ -1,12 +1,15 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
+import torch
 import dataset
 import train
 import utils
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # Sidebar for navigation
-page = st.sidebar.radio("Navigation", ["Dataset", "Train Models", "Ensemble Prediction"])
+page = st.sidebar.radio("Navigation", ["Dataset", "Train Models", "Ensemble Prediction", "Evaluate Models"])
 
 if page == "Dataset":
     st.title("Dataset Management")
@@ -88,3 +91,67 @@ elif page == "Ensemble Prediction":
                 st.write(f"Ensemble (Weighted Averaged Probabilities, ResNet weight: {weight_resnet:.2f}):")
             for i, prob in enumerate(avg_prob):
                 st.write(f"{class_names[i]}: {prob:.4f}")
+
+elif page == "Evaluate Models":
+    st.title("Evaluate Models on Test Data")
+
+    # Class names
+    class_names = ['EOSINOPHIL', 'LYMPHOCYTE', 'MONOCYTE', 'NEUTROPHIL']
+
+    if st.button("Evaluate ResNet-18"):
+        with st.spinner("Evaluating ResNet-18..."):
+            # Load dataset
+            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+            model = utils.load_resnet18(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"ResNet-18 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate VGG-16"):
+        with st.spinner("Evaluating VGG-16..."):
+            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+            model = utils.load_vgg16(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"VGG-16 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate Ensemble"):
+        with st.spinner("Evaluating Ensemble..."):
+            train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+            resnet_model = utils.load_resnet18(class_names)
+            vgg_model = utils.load_vgg16(class_names)
+            resnet_model.eval()
+            vgg_model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs_resnet = resnet_model(inputs)
+                    outputs_vgg = vgg_model(inputs)
+                    prob_resnet = torch.softmax(outputs_resnet, dim=1)
+                    prob_vgg = torch.softmax(outputs_vgg, dim=1)
+                    avg_prob = (prob_resnet + prob_vgg) / 2
+                    _, predicted = torch.max(avg_prob, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"Ensemble Test Accuracy: {accuracy:.2f}%")
