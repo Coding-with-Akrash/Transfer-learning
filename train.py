@@ -121,26 +121,120 @@ def train_resnet18(dataset_path, num_epochs=2):
     print("ResNet-18 model saved.")
     return train_losses, test_losses, train_accs, test_accs
 
-def train_vgg16(dataset_path, num_epochs=2):
+def train_vgg16(dataset_path, num_epochs=5):
     train_loader, test_loader, class_names = load_dataset(dataset_path)
     num_classes = len(class_names)
 
     vgg16 = models.vgg16(weights='IMAGENET1K_V1')
     vgg16.classifier[6] = nn.Linear(4096, num_classes)
 
-    # Freeze all layers
+    # Unfreeze all layers for fine-tuning
     for param in vgg16.parameters():
-        param.requires_grad = False
-
-    # Unfreeze last conv block (features[24:]) + classifier
-    for name, param in vgg16.features.named_parameters():
-        if int(name.split('.')[0]) >= 24:  # conv5 block
-            param.requires_grad = True
-    for param in vgg16.classifier.parameters():
         param.requires_grad = True
 
     vgg16 = vgg16.to(device)
     train_losses, test_losses, train_accs, test_accs = train_model(vgg16, train_loader, test_loader, class_names, num_epochs)
     torch.save(vgg16.state_dict(), 'vgg16_model.pth')
     print("VGG-16 model saved.")
+    return train_losses, test_losses, train_accs, test_accs
+
+def train_densenet121(dataset_path, num_epochs=5):
+    train_loader, test_loader, class_names = load_dataset(dataset_path)
+    num_classes = len(class_names)
+
+    densenet = models.densenet121(weights='IMAGENET1K_V1')
+    num_ftrs = densenet.classifier.in_features
+    densenet.classifier = nn.Linear(num_ftrs, num_classes)
+
+    # Unfreeze all layers for fine-tuning
+    for param in densenet.parameters():
+        param.requires_grad = True
+
+    densenet = densenet.to(device)
+    train_losses, test_losses, train_accs, test_accs = train_model(densenet, train_loader, test_loader, class_names, num_epochs)
+    torch.save(densenet.state_dict(), 'densenet121_model.pth')
+    print("DenseNet-121 model saved.")
+    return train_losses, test_losses, train_accs, test_accs
+
+def train_efficientnet_b0(dataset_path, num_epochs=5):
+    train_loader, test_loader, class_names = load_dataset(dataset_path)
+    num_classes = len(class_names)
+
+    efficientnet = models.efficientnet_b0(weights='IMAGENET1K_V1')
+    num_ftrs = efficientnet.classifier[1].in_features
+    efficientnet.classifier[1] = nn.Linear(num_ftrs, num_classes)
+
+    # Unfreeze all layers for fine-tuning
+    for param in efficientnet.parameters():
+        param.requires_grad = True
+
+    efficientnet = efficientnet.to(device)
+    train_losses, test_losses, train_accs, test_accs = train_model(efficientnet, train_loader, test_loader, class_names, num_epochs)
+    torch.save(efficientnet.state_dict(), 'efficientnet_b0_model.pth')
+    print("EfficientNet-B0 model saved.")
+    return train_losses, test_losses, train_accs, test_accs
+
+def train_mobilenet_v2(dataset_path, num_epochs=5):
+    train_loader, test_loader, class_names = load_dataset(dataset_path)
+    num_classes = len(class_names)
+
+    mobilenet = models.mobilenet_v2(weights='IMAGENET1K_V1')
+    num_ftrs = mobilenet.classifier[1].in_features
+    mobilenet.classifier[1] = nn.Linear(num_ftrs, num_classes)
+
+    # Unfreeze all layers for fine-tuning
+    for param in mobilenet.parameters():
+        param.requires_grad = True
+
+    mobilenet = mobilenet.to(device)
+    train_losses, test_losses, train_accs, test_accs = train_model(mobilenet, train_loader, test_loader, class_names, num_epochs)
+    torch.save(mobilenet.state_dict(), 'mobilenet_v2_model.pth')
+    print("MobileNetV2 model saved.")
+    return train_losses, test_losses, train_accs, test_accs
+
+def train_vit_b_16(dataset_path, num_epochs=5):
+    train_loader, test_loader, class_names = load_dataset(dataset_path)
+    num_classes = len(class_names)
+
+    vit = models.vit_b_16(weights='IMAGENET1K_V1')
+    num_ftrs = vit.heads.head.in_features
+    vit.heads.head = nn.Linear(num_ftrs, num_classes)
+
+    # Unfreeze all layers for fine-tuning
+    for param in vit.parameters():
+        param.requires_grad = True
+
+    vit = vit.to(device)
+    train_losses, test_losses, train_accs, test_accs = train_model(vit, train_loader, test_loader, class_names, num_epochs)
+    torch.save(vit.state_dict(), 'vit_b_16_model.pth')
+    print("ViT-B/16 model saved.")
+    return train_losses, test_losses, train_accs, test_accs
+
+class CNNLSTM(nn.Module):
+    def __init__(self, num_classes):
+        super(CNNLSTM, self).__init__()
+        self.cnn = models.resnet18(weights='IMAGENET1K_V1')
+        self.cnn.fc = nn.Identity()  # Remove the final FC layer
+        self.lstm = nn.LSTM(input_size=512, hidden_size=256, num_layers=2, batch_first=True)
+        self.fc = nn.Linear(256, num_classes)
+
+    def forward(self, x):
+        batch_size = x.size(0)
+        # Extract features with CNN
+        features = self.cnn(x)  # Shape: (batch, 512)
+        # Reshape for LSTM: treat as sequence of length 1
+        features = features.unsqueeze(1)  # (batch, 1, 512)
+        lstm_out, _ = self.lstm(features)
+        out = self.fc(lstm_out[:, -1, :])  # Take the last output
+        return out
+
+def train_cnn_lstm(dataset_path, num_epochs=5):
+    train_loader, test_loader, class_names = load_dataset(dataset_path)
+    num_classes = len(class_names)
+
+    model = CNNLSTM(num_classes)
+    model = model.to(device)
+    train_losses, test_losses, train_accs, test_accs = train_model(model, train_loader, test_loader, class_names, num_epochs)
+    torch.save(model.state_dict(), 'cnn_lstm_model.pth')
+    print("CNN-LSTM model saved.")
     return train_losses, test_losses, train_accs, test_accs

@@ -14,11 +14,24 @@ This project provides a Streamlit web application for training, evaluating, and 
 
 - **Blood Cells Dataset**: Classifies white blood cells into EOSINOPHIL, LYMPHOCYTE, MONOCYTE, NEUTROPHIL
 - **Chest X-ray Pneumonia Dataset**: Classifies chest X-rays into NORMAL and PNEUMONIA
+- **Skin Cancer Dataset**: HAM10000 dataset for skin lesion classification
+- **Brain Tumor Dataset**: Classifies brain MRI images into TUMOR and NO_TUMOR
 
 ## Models
 
+### PyTorch Models
 - **ResNet-18**: Fine-tuned with layer4 and fully connected layer unfrozen
 - **VGG-16**: Fine-tuned with the last convolutional block and classifier unfrozen
+- **DenseNet-121**: Fine-tuned DenseNet architecture
+- **EfficientNet-B0**: EfficientNet model for better performance
+- **MobileNetV2**: Lightweight CNN for mobile applications
+- **ViT-B/16**: Vision Transformer for advanced image classification
+- **CNN-LSTM**: Hybrid model combining CNN feature extraction with LSTM for sequential processing
+
+### TensorFlow/Keras Models
+- **Keras CNN**: Custom convolutional neural network
+- **Keras ResNet50**: Pre-trained ResNet50 with fine-tuning
+- **Keras EfficientNetB0**: Pre-trained EfficientNetB0 with fine-tuning
 
 ## Requirements
 
@@ -102,11 +115,28 @@ docker run -p 8501:8501 ensemble-app
 - `train.py`: Model training functions
 - `dataset.py`: Dataset download and preparation
 - `utils.py`: Utility functions for model loading and prediction
+- `evaluate_models.py`: Model evaluation script
 - `main.py`: Original training script (legacy)
 - `requirements.txt`: Python dependencies
+- `models/`: Individual model training scripts for Kaggle outsourcing
+  - `resnet18_model.py`: Standalone ResNet-18 training script (PyTorch)
+  - `vgg16_model.py`: Standalone VGG-16 training script (PyTorch)
+  - `densenet121_model.py`: Standalone DenseNet-121 training script (PyTorch)
+  - `efficientnet_b0_model.py`: Standalone EfficientNet-B0 training script (PyTorch)
+  - `mobilenet_v2_model.py`: Standalone MobileNetV2 training script (PyTorch)
+  - `vit_b_16_model.py`: Standalone ViT-B/16 training script (PyTorch)
+  - `cnn_lstm_model.py`: Standalone CNN-LSTM training script (PyTorch)
+  - `keras_cnn_model.py`: Standalone Custom CNN training script (TensorFlow/Keras)
+  - `keras_resnet_model.py`: Standalone ResNet50 training script (TensorFlow/Keras)
+  - `keras_efficientnet_model.py`: Standalone EfficientNetB0 training script (TensorFlow/Keras)
 - `dataset/`: Local dataset storage (created automatically)
 - `resnet18_model.pth`: Saved ResNet-18 model
 - `vgg16_model.pth`: Saved VGG-16 model
+- `densenet121_model.pth`: Saved DenseNet-121 model
+- `efficientnet_b0_model.pth`: Saved EfficientNet-B0 model
+- `mobilenet_v2_model.pth`: Saved MobileNetV2 model
+- `vit_b_16_model.pth`: Saved ViT-B/16 model
+- `cnn_lstm_model.pth`: Saved CNN-LSTM model
 
 ## License
 

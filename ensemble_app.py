@@ -22,15 +22,25 @@ if page == "Dataset":
 elif page == "Train Models":
     st.title("Train Models")
     dataset_path = "dataset/TRAIN"
-    model_choice = st.selectbox("Choose model to train:", ["ResNet-18", "VGG-16"])
+    model_choice = st.selectbox("Choose model to train:", ["ResNet-18", "VGG-16", "DenseNet-121", "EfficientNet-B0", "MobileNetV2", "ViT-B/16", "CNN-LSTM"])
     num_epochs = st.slider("Number of epochs:", 1, 10, 2)
 
     if st.button("Train Model"):
         with st.spinner(f"Training {model_choice}..."):
             if model_choice == "ResNet-18":
                 train_losses, test_losses, train_accs, test_accs = train.train_resnet18(dataset_path, num_epochs)
-            else:
+            elif model_choice == "VGG-16":
                 train_losses, test_losses, train_accs, test_accs = train.train_vgg16(dataset_path, num_epochs)
+            elif model_choice == "DenseNet-121":
+                train_losses, test_losses, train_accs, test_accs = train.train_densenet121(dataset_path, num_epochs)
+            elif model_choice == "EfficientNet-B0":
+                train_losses, test_losses, train_accs, test_accs = train.train_efficientnet_b0(dataset_path, num_epochs)
+            elif model_choice == "MobileNetV2":
+                train_losses, test_losses, train_accs, test_accs = train.train_mobilenet_v2(dataset_path, num_epochs)
+            elif model_choice == "ViT-B/16":
+                train_losses, test_losses, train_accs, test_accs = train.train_vit_b_16(dataset_path, num_epochs)
+            elif model_choice == "CNN-LSTM":
+                train_losses, test_losses, train_accs, test_accs = train.train_cnn_lstm(dataset_path, num_epochs)
         st.success(f"{model_choice} trained successfully!")
         st.write(f"Final Test Accuracy: {test_accs[-1]:.2f}%")
 
@@ -144,6 +154,106 @@ elif page == "Evaluate Models":
                     correct += (predicted == labels).sum().item()
             accuracy = 100 * correct / total
         st.success(f"VGG-16 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate DenseNet-121"):
+        if not os.path.exists('densenet121_model.pth'):
+            st.error("DenseNet-121 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating DenseNet-121..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_densenet121(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"DenseNet-121 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate EfficientNet-B0"):
+        if not os.path.exists('efficientnet_b0_model.pth'):
+            st.error("EfficientNet-B0 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating EfficientNet-B0..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_efficientnet_b0(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"EfficientNet-B0 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate MobileNetV2"):
+        if not os.path.exists('mobilenet_v2_model.pth'):
+            st.error("MobileNetV2 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating MobileNetV2..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_mobilenet_v2(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"MobileNetV2 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate ViT-B/16"):
+        if not os.path.exists('vit_b_16_model.pth'):
+            st.error("ViT-B/16 model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating ViT-B/16..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_vit_b_16(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"ViT-B/16 Test Accuracy: {accuracy:.2f}%")
+
+    if st.button("Evaluate CNN-LSTM"):
+        if not os.path.exists('cnn_lstm_model.pth'):
+            st.error("CNN-LSTM model not found. Please train the model first.")
+        else:
+            with st.spinner("Evaluating CNN-LSTM..."):
+                train_loader, test_loader, _ = train.load_dataset("dataset/TRAIN")
+                model = utils.load_cnn_lstm(class_names)
+            model.eval()
+            correct = 0
+            total = 0
+            with torch.no_grad():
+                for inputs, labels in test_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    _, predicted = torch.max(outputs, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+            accuracy = 100 * correct / total
+        st.success(f"CNN-LSTM Test Accuracy: {accuracy:.2f}%")
 
     if st.button("Evaluate Ensemble"):
         if not os.path.exists('resnet18_model.pth') or not os.path.exists('vgg16_model.pth'):
